@@ -4,23 +4,19 @@ import { Formik, Form, Field , ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import axios from 'axios'
 
-const baseUrl = 'https://ote-8bb7c.firebaseio.com'
+const baseUrl = 'https://note-8bb7c.firebaseio.com'
 
 const INITIAL_STATE = {
-  data: {
-    beforeText: '',
-    afterText: '',
-    note: '',
-  },
+  beforeText: '',
+  afterText: '',
+  note: '',
 }
 
 const FormSchema = Yup.object().shape({
-  data: Yup.object({
-    beforeText: Yup.string()
-      .required('Required'),
-    afterText: Yup.string()
-      .required('Required'),
-    })
+  beforeText: Yup.string()
+    .required('Required'),
+  afterText: Yup.string()
+    .required('Required'),
 });
 
 const handleSubmit = async (values, actions) => {
@@ -30,10 +26,13 @@ const handleSubmit = async (values, actions) => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
    }
-  await axios.post(postUrl, postData)
-  .catch(res => {
-    console.log(actions)
-  })
+  try {
+    await axios.post(postUrl, postData)
+  } catch(error) {
+    actions.setStatus({apiErrorMessage: error})
+    actions.setSubmitting(false)
+    return
+  }
   actions.resetForm()
 }
 
@@ -44,8 +43,8 @@ const NoteForm = () => (
       onSubmit={handleSubmit}
       validationSchema={FormSchema}
       render={({
-        values,
-        isSubmitting
+        isSubmitting,
+        status,
       }) => {
         if(isSubmitting) {
           return (
@@ -54,15 +53,6 @@ const NoteForm = () => (
             </div>
           )
         }
-
-        if(values.apiError) {
-          return (
-            <div>
-             APIでエラー: {values.apiError}
-            </div>
-          )
-        }
-        
         return (
           <Form>
             <Row>
@@ -72,10 +62,10 @@ const NoteForm = () => (
               <Field 
                 type="text" 
                 id="beforeText" 
-                name="data.beforeText" 
+                name="beforeText" 
                 placeholder="type any words..."
               />
-              <ErrorMessage name="data.beforeText" />
+              <ErrorMessage name="beforeText" />
             </Row>
             <Row>
               <Label>
@@ -84,10 +74,10 @@ const NoteForm = () => (
               <Field 
                 type="text" 
                 id="afterText" 
-                name="data.afterText" 
+                name="afterText" 
                 placeholder="日本語を入力"
               />
-              <ErrorMessage name="data.afterText" />
+              <ErrorMessage name="afterText" />
             </Row>
 
             <Row>
@@ -96,7 +86,7 @@ const NoteForm = () => (
               </Label>
               <Field  
                 id="note" 
-                name="data.note" 
+                name="note" 
                 component="textarea" 
                 placeholder="適当なメモ"
               />
@@ -104,6 +94,7 @@ const NoteForm = () => (
             <Row>
               <button type="submit">保存する</button>
             </Row>
+            { status && status.apiErrorMessage && <div>APIでエラーだよ</div>}
           </Form>
         )
       }}
