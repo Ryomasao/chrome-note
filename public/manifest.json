@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
   "version": "1.0",
-  "name": "EFFORT",
-  "description": "nothign",
+  "name": "Note",
+  "description": "simple note",
   "browser_action": {
-    "default_title": "WELCOME",
+    "default_title": "Note",
     "default_popup": "index.html"
   }
 }
